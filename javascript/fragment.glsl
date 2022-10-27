@@ -1,5 +1,5 @@
 precision highp float;
-const int max_iterations = 200;
+const int max_iterations = 100;
 const float infinit_value = 50.0;
 const float box_size = 1000.0;
 const float mapped_value = 2.0;
@@ -60,13 +60,9 @@ vec3 HSVtoRGB(float h, float s, float v) {
     return vec3(r, g, b);
 }
 
-uniform float zoom;
-
 void main(){
-    float e = box_size / zoom;
-    float p = box_size - e;
-    float x = 79.0 + (gl_FragCoord.x / zoom) + p/2.0;
-    float y = 124.0 + (gl_FragCoord.y / zoom) + p/2.0;
+    float x = gl_FragCoord.x;
+    float y = gl_FragCoord.y;
 
     float a = map(x, 0.0, box_size, -mapped_value, mapped_value);
     float b = map(y, 0.0, box_size, -mapped_value, mapped_value);
