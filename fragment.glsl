@@ -1,7 +1,7 @@
-precision mediump float;
-const int max_iterations = 100;
-const float infinit_value = 20.0;
-const float box_size = 5000.0;
+precision highp float;
+const int max_iterations = 200;
+const float infinit_value = 50.0;
+const float box_size = 1000.0;
 const float mapped_value = 2.0;
 
 float map(float value, float i_start, float i_stop, float o_start, float o_stop) {
@@ -60,9 +60,13 @@ vec3 HSVtoRGB(float h, float s, float v) {
     return vec3(r, g, b);
 }
 
+uniform float zoom;
+
 void main(){
-    float x = gl_FragCoord.x;
-    float y = gl_FragCoord.y;
+    float e = box_size / zoom;
+    float p = box_size - e;
+    float x = 79.0 + (gl_FragCoord.x / zoom) + p/2.0;
+    float y = 124.0 + (gl_FragCoord.y / zoom) + p/2.0;
 
     float a = map(x, 0.0, box_size, -mapped_value, mapped_value);
     float b = map(y, 0.0, box_size, -mapped_value, mapped_value);
@@ -81,16 +85,16 @@ void main(){
         n = z;
     }
 
-    if (n <= max_iterations){
-        float quotient = float(n) / float(max_iterations);
-        float color = clamp(quotient, 0.0, 1.0);
-        if (quotient > 0.5) {
-            // Close to the mandelbrot set the color changes from green to white
-            gl_FragColor = vec4(color, 1.0, color, 1.0);
-        }
-        else {
-            // Far away it changes from black to green
-            gl_FragColor = vec4(0.0, color, 0.0, 1.0);
-        }
+    float hue = float(n) / float(max_iterations);
+    float saturation = 1.0;
+    float value;
+    if(n < max_iterations - 1){
+        value = 1.0;
+    }else{
+        value = 0.0;
     }
+
+    vec3 color = HSVtoRGB(hue, saturation, value);
+
+    gl_FragColor = vec4(color, 1.0);
 }

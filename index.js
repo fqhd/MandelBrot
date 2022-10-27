@@ -13,20 +13,20 @@ async function main() {
     createQuad();
 
     drawQuad();
-
-    const dropdown = document.getElementById('NumberSequences');
-    dropdown.addEventListener('change', () => {
-        const location = gl.getUniformLocation(programInfo.program, 'ns');
-        gl.uniform1i(location, dropdown.selectedIndex);
-    });
 }
 
+let t = 1.1;
 function drawQuad() {
+    t = Math.pow(t, 1.005);
     gl.useProgram(programInfo.program);
     gl.bindBuffer(gl.ARRAY_BUFFER, quad.position);
     gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+    const location = gl.getUniformLocation(programInfo.program, 'zoom');
+    gl.uniform1f(location, t);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    requestAnimationFrame(drawQuad);
 }
 
 function createQuad() {
