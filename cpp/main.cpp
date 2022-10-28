@@ -3,7 +3,7 @@
 #include "stb_image_write.h"
 #include <stdint.h>
 
-const uint32_t boxSize = 2000;
+const uint32_t boxSize = 1000;
 const uint32_t maxIterations = 100;
 const double infinityValue = 20.0;
 
@@ -15,17 +15,17 @@ void HSVtoRGB(float h, float s, float v, uint8_t& r, uint8_t& g, uint8_t& b);
 int main() {
     uint8_t* data = new uint8_t[boxSize * boxSize * 3];
 
-    drawMandelBrot(data, 0.001);
+    drawMandelBrot(data, 0.03);
 
     stbi_write_jpg("out.jpg", boxSize, boxSize, 3, data, 100);
     return 0;
 }
 
 void drawMandelBrot(uint8_t* data, double mapping) {
-    for(uint32_t x = 0; x < boxSize; x++){
-        for(uint32_t y = 0; y < boxSize; y++){
-            double a = map((double)x, 0.0, boxSize, -mapping, mapping) - 0.7453;
-            double b = map((double)y, 0.0, boxSize, -mapping, mapping) - 0.1127;
+    for(uint32_t y = 0; y < boxSize; y++){
+        for(uint32_t x = 0; x < boxSize; x++){
+            double a = map((double)x, 0.0, boxSize, -mapping, mapping) -0.16;
+            double b = map((double)y, 0.0, boxSize, -mapping, mapping) +1.0405;
 
             double cA = a;
             double cB = b;
@@ -42,19 +42,30 @@ void drawMandelBrot(uint8_t* data, double mapping) {
                 }
             }
 
-            float hue = n / (float)maxIterations;
-            float saturation = 1.0f;
-            float value;
-            if(n < maxIterations){
-                value = 1.0f;
+            if (n < maxIterations) {
+                int i = n % 16;
+                uint8_t mapping[] = {
+                    66, 30, 15,
+                    25, 7, 26,
+                    9, 1, 47,
+                    4, 4, 73,
+                    0, 7, 100,
+                    12, 44, 138,
+                    24, 82, 177,
+                    57, 125, 209,
+                    134, 181, 229,
+                    211, 236, 248,
+                    241, 233, 191,
+                    248, 201, 95,
+                    255, 170, 0,
+                    204, 128, 0,
+                    153, 87, 0,
+                    106, 52, 3
+                };
+                setPixel(data, x, y, mapping[i*3], mapping[i*3+1], mapping[i*3+2]);
             }else{
-                value = 0.0f;
+                setPixel(data, x, y, 0, 0, 0);
             }
-
-            uint8_t red, green, blue;
-            HSVtoRGB(hue, saturation, value, red, green, blue);
-
-            setPixel(data, x, y, green, red, blue);
         }
     }
 }
