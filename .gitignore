@@ -5,3 +5,4 @@ frames/
 .vscode/
 .DS_Store
 video.mp4
+*.obj

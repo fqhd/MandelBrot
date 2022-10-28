@@ -3,34 +3,61 @@
 #include <string>
 #include "stb_image_write.h"
 #include <stdint.h>
+#include <math.h>
+#include <limits>
+#include <thread>
 
-const uint32_t numFrames = 600;
-const uint32_t boxSize = 1000;
-const uint32_t maxIterations = 100;
+const uint32_t numFrames = 1480;
+const uint32_t width = 1920;
+const uint32_t height = 1080;
+const uint32_t numThreads = 20;
 const double infinityValue = 20.0;
 
-void drawMandelBrot(uint8_t* data, double mapping);
+void drawMandelBrot(uint8_t* data, double mapping, uint32_t maxIterations);
 double map(double value, double iStart, double iStop, double oStart, double oStop);
 void setPixel(uint8_t* data, uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b);
 void HSVtoRGB(float h, float s, float v, uint8_t& r, uint8_t& g, uint8_t& b);
 
 int main() {
-    uint8_t* data = new uint8_t[boxSize * boxSize * 3];
+    uint8_t* data = new uint8_t[width * height * 3 * numThreads];
+    std::thread** threads = new std::thread*[numThreads];
 
-	for(uint32_t i = 0; i < numFrames; i++){
-    	drawMandelBrot(data, 2.0 / pow(2.0, i / 10.0));
-    	stbi_write_jpg((std::string("frames/") + std::to_string(i) + ".jpg").c_str(), boxSize, boxSize, 3, data, 100);
-		std::cout << "frame: " << i << std::endl;
+    uint32_t frameCounter = 0;
+	for(uint32_t j = 0; j < numFrames / numThreads; j++){
+        for(int i = 0; i < numThreads; i++){
+            threads[i] = new std::thread(drawMandelBrot, data + width * height * 3 * i, 2.0 / pow(2.0, (frameCounter + i) / 40.0), (uint32_t)(100 + (frameCounter + i) * 2));
+        }
+
+        for(int i = 0; i < numThreads; i++){
+            threads[i]->join();
+        }
+
+        for(int i = 0; i < numThreads; i++){
+    	    stbi_write_jpg((std::string("frames/") + std::to_string(frameCounter + i) + ".jpg").c_str(), width, height, 3, data + width * height * 3 * i, 100);
+        }
+
+        for(int i = 0; i < numThreads; i++){
+            delete threads[i];
+        }
+
+        frameCounter += numThreads;
+		std::cout << "frame: " << frameCounter << std::endl;
 	}
+
+    
+
+    delete[] data;
+    delete[] threads;
 
     return 0;
 }
 
-void drawMandelBrot(uint8_t* data, double mapping) {
-    for(uint32_t y = 0; y < boxSize; y++){
-        for(uint32_t x = 0; x < boxSize; x++){
-            double a = map((double)x, 0.0, boxSize, -mapping, mapping) -0.16;
-            double b = map((double)y, 0.0, boxSize, -mapping, mapping) +1.0405;
+void drawMandelBrot(uint8_t* data, double mapping, uint32_t maxIterations) {
+    float ratio = width / (float) height;
+    for(uint32_t y = 0; y < height; y++){
+        for(uint32_t x = 0; x < width; x++){
+            double a = map((double)x, 0.0, width, -mapping * ratio, mapping * ratio) - 0.745989921058;
+            double b = map((double)y, 0.0, height, -mapping, mapping) + 0.10548817539;
 
             double cA = a;
             double cB = b;
@@ -47,30 +74,19 @@ void drawMandelBrot(uint8_t* data, double mapping) {
                 }
             }
 
-            if (n < maxIterations) {
-                int i = n % 16;
-                uint8_t mapping[] = {
-                    66, 30, 15,
-                    25, 7, 26,
-                    9, 1, 47,
-                    4, 4, 73,
-                    0, 7, 100,
-                    12, 44, 138,
-                    24, 82, 177,
-                    57, 125, 209,
-                    134, 181, 229,
-                    211, 236, 248,
-                    241, 233, 191,
-                    248, 201, 95,
-                    255, 170, 0,
-                    204, 128, 0,
-                    153, 87, 0,
-                    106, 52, 3
-                };
-                setPixel(data, x, y, mapping[i*3], mapping[i*3+1], mapping[i*3+2]);
+            float hue = n / (float)maxIterations;
+            float saturation = 1.0f;
+            float value;
+            if(n < maxIterations){
+                value = 1.0f;
             }else{
-                setPixel(data, x, y, 0, 0, 0);
+                value = 0.0f;
             }
+
+            uint8_t red, green, blue;
+            HSVtoRGB(hue, saturation, value, red, green, blue);
+
+            setPixel(data, x, y, red, green, blue);
         }
     }
 }
@@ -80,9 +96,9 @@ double map(double value, double iStart, double iStop, double oStart, double oSto
 }
 
 void setPixel(uint8_t* data, uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b) {
-    data[y * boxSize * 3 + x * 3] = r;
-    data[y * boxSize * 3 + x * 3 + 1] = g;
-    data[y * boxSize * 3 + x * 3 + 2] = b;
+    data[y * width * 3 + x * 3] = r;
+    data[y * width * 3 + x * 3 + 1] = g;
+    data[y * width * 3 + x * 3 + 2] = b;
 }
 
 void HSVtoRGB(float h, float s, float v, uint8_t& r, uint8_t& g, uint8_t& b) {
