@@ -4,8 +4,8 @@
 #include "stb_image_write.h"
 #include <stdint.h>
 
-const uint32_t numFrames = 100;
-const uint32_t boxSize = 100;
+const uint32_t numFrames = 600;
+const uint32_t boxSize = 1000;
 const uint32_t maxIterations = 100;
 const double infinityValue = 20.0;
 
@@ -22,7 +22,7 @@ int main() {
 	for(uint32_t i = 0; i < numFrames; i++){
     	drawMandelBrot(data, 2.0 / pow(2.0, i / 10.0));
     	stbi_write_jpg((std::string("frames/") + std::to_string(i) + ".jpg").c_str(), boxSize, boxSize, 3, data, 100);
-		std::cout << "hi" << std::endl;
+		std::cout << "frame: " << i << std::endl;
 	}
 
     return 0;

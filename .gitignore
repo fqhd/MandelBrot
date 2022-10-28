@@ -3,3 +3,4 @@
 *.out
 frames/
 .vscode/
+.DS_Store
