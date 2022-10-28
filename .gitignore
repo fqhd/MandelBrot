@@ -1,3 +1,7 @@
 *.exe
-*.bat
 *.jpg
+*.out
+frames/
+.vscode/
+.DS_Store
+video.mp4
