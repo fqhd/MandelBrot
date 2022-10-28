@@ -14,4 +14,4 @@ def sortItems(items):
 image_files.sort(key=sortItems)
 
 clip = moviepy.video.io.ImageSequenceClip.ImageSequenceClip(image_files, fps=fps)
-clip.write_videofile('my_video.mp4')
+clip.write_videofile('video.mp4')
