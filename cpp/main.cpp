@@ -1,9 +1,11 @@
 #include <iostream>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <sys/stat.h>
 #include "stb_image_write.h"
 #include <stdint.h>
 
-const uint32_t boxSize = 2000;
+const uint32_t numFrames = 100;
+const uint32_t boxSize = 100;
 const uint32_t maxIterations = 100;
 const double infinityValue = 20.0;
 
@@ -15,9 +17,14 @@ void HSVtoRGB(float h, float s, float v, uint8_t& r, uint8_t& g, uint8_t& b);
 int main() {
     uint8_t* data = new uint8_t[boxSize * boxSize * 3];
 
-    drawMandelBrot(data, 0.001);
+	mkdir("frames", 0777);
 
-    stbi_write_jpg("out.jpg", boxSize, boxSize, 3, data, 100);
+	for(uint32_t i = 0; i < numFrames; i++){
+    	drawMandelBrot(data, 2.0 / pow(2.0, i / 10.0));
+    	stbi_write_jpg((std::string("frames/") + std::to_string(i) + ".jpg").c_str(), boxSize, boxSize, 3, data, 100);
+		std::cout << "hi" << std::endl;
+	}
+
     return 0;
 }
 
