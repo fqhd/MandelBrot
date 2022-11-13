@@ -10,7 +10,7 @@
 const uint32_t numFrames = 1480;
 const uint32_t width = 1920;
 const uint32_t height = 1080;
-const uint32_t numThreads = 20;
+const uint32_t numThreads = 12;
 const double infinityValue = 20.0;
 
 void drawMandelBrot(uint8_t* data, double mapping, uint32_t maxIterations);
